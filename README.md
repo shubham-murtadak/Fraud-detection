@@ -1,61 +1,64 @@
 # FraudGuard AI: Real-Time Fraud Detection System
 
-FraudGuard AI is an end-to-end Machine Learning project designed to detect fraudulent financial transactions in real-time. It takes tabular transaction data and predicts the probability of fraud using a highly optimized XGBoost classifier served via a lightning-fast FastAPI REST API.
+FraudGuard AI is an enterprise-grade, real-time Machine Learning pipeline designed to detect fraudulent financial transactions with high accuracy and ultra-low latency. Built with a focus on scalable MLOps, this project encompasses the entire lifecycle from rigorous data engineering and model calibration to a fully automated CI/CD cloud deployment.
 
-## 🚀 Key Features
+## Architecture & Tech Stack
 
-* **Senior ML Engineering Preprocessing**: 
-  * Implements `RobustScaler` for outlier immunity.
-  * Replaces weak OneHotEncoding with `TargetEncoder` (Mean Encoding) to handle high-cardinality categorical features (like specific bank branches or email domains) by tracking their historical fraud rates.
-  * Adds `MissingIndicator` signals to explicitly teach the model *when* data is missing, which is often a strong signal for fraud.
-* **Optuna Hyperparameter Tuning**: 
-  * The XGBoost model was mathematically optimized over 10 trials using the Optuna framework to maximize the **PR-AUC** (Precision-Recall Area Under Curve), which is the industry standard metric for highly imbalanced datasets like fraud.
-* **Real-Time Gateway Architecture**: 
-  * Designed to simulate a production "Payment Gateway". Features that require batch calculation or graph databases (like User Velocity metrics) were explicitly dropped in favor of a 25-feature payload that is instantly available at the time of the swipe.
-* **FastAPI Serving**:
-  * Pydantic schemas strictly validate the incoming JSON payloads to prevent pipeline crashes.
-  * The model is cached in memory on startup, allowing predictions in <100 milliseconds.
+- **Machine Learning**: XGBoost, LightGBM, Scikit-learn, Optuna (Hyperparameter Tuning), MLflow (Experiment Tracking)
+- **Data Engineering**: Pandas, NumPy, Custom Sklearn Transformers (Target Encoding, Frequency Encoding)
+- **API Server**: FastAPI, Uvicorn, Pydantic (Data Validation)
+- **Containerization**: Docker
+- **Infrastructure as Code (IaC)**: Terraform
+- **Cloud Provider (AWS)**: Elastic Container Service (ECS - Fargate), Elastic Container Registry (ECR), Application Load Balancer (ALB), CloudWatch
+- **CI/CD**: GitHub Actions
 
-## 📂 Project Structure
+## Key Features
 
-```
-├── data/                  # Raw dataset (ignored by git due to size)
-├── models/                # Serialized Champion Model (.pkl)
-├── notebooks/             # EDA, Feature Selection, and MLflow/Optuna experiments
-├── scripts/               # Utility scripts for executing pipeline steps
-└── src/fraudguard/        # Core Python Package
-    ├── api/               # FastAPI Application & Pydantic Schemas
-    ├── data/              # Ingestion and split logic
-    ├── features/          # Engineering pipeline (Imputers, Encoders, Scalers)
-    └── models/            # XGBoost training wrapper
-```
+1. **Advanced Feature Engineering**: Implemented robust target encoding, frequency encoding, and interaction features specifically tailored for highly imbalanced transactional data.
+2. **Calibrated Ensemble Modeling**: Trained an optimized XGBoost champion model. Conducted rigorous hyperparameter tuning via Optuna and probability calibration to ensure reliable fraud probability outputs.
+3. **Real-Time Inference API**: Deployed a lightning-fast REST API using FastAPI. Features strict Pydantic payload validation and dynamic probability thresholding for real-time `ALLOW` / `BLOCK` decisions.
+4. **Serverless Cloud Deployment**: Containerized the application using Docker and deployed it to AWS ECS Fargate for auto-scaling, serverless compute. 
+5. **Zero-Downtime CI/CD**: Fully automated deployment pipeline via GitHub Actions. Any push to the `main` branch automatically builds, tags, and deploys the latest Docker image to AWS with zero downtime.
+6. **Infrastructure as Code**: The entire AWS infrastructure (VPC, Security Groups, ALB, ECS, ECR) is strictly defined and managed using Terraform.
 
-## 🛠️ Installation & Setup
+## Project Structure
 
-1. **Clone the repository:**
 ```bash
-git clone https://github.com/shubham-murtadak/Fraud-detection.git
-cd Fraud-detection
+├── data/                  # Raw and processed transaction datasets
+├── models/                # Serialized champion models (.pkl)
+├── notebooks/             # EDA, Feature Selection, and Model Tuning
+├── src/
+│   └── fraudguard/        # Core Python package
+│       ├── features/      # Custom Sklearn Transformers
+│       ├── models/        # Training and evaluation scripts
+│       └── api/           # FastAPI application and schemas
+├── infrastructure/        # Terraform IaC definitions
+├── scripts/               # Utility and API testing scripts
+├── .github/workflows/     # CI/CD pipelines
+├── Dockerfile             # Container definition
+└── requirements.txt       # Python dependencies
 ```
 
-2. **Create a virtual environment and install dependencies:**
-```bash
-python -m venv .venv
-# Activate on Windows:
-.\.venv\Scripts\activate
-# Activate on Mac/Linux:
-source .venv/bin/activate
+## Local Development
 
+### 1. Install Dependencies
+```bash
 pip install -r requirements.txt
 ```
 
-## 🌐 Running the FastAPI Server
-
-To start the real-time inference server, run:
+### 2. Run the API Locally
 ```bash
-uvicorn src.fraudguard.api.main:app --reload
+uvicorn src.fraudguard.api.main:app --host 0.0.0.0 --port 8000
 ```
-Once the server is running, navigate to `http://127.0.0.1:8000/docs` in your browser to interact with the Swagger UI and send test transactions!
+Navigate to `http://127.0.0.1:8000/docs` to interact with the Swagger UI.
 
-## 🧪 Model Performance
-The final deployed Champion Model achieved a **PR-AUC of 0.286** on a highly imbalanced testing dataset, significantly outperforming baseline tree models and complex Stacking Ensembles.
+## Cloud Deployment (AWS)
+
+1. Set AWS credentials in your environment.
+2. Navigate to the `infrastructure/` directory.
+3. Initialize and apply the Terraform configuration:
+```bash
+terraform init
+terraform apply -auto-approve
+```
+4. Push code to GitHub to trigger the CI/CD pipeline, which will automatically deploy the API to the AWS Load Balancer.
