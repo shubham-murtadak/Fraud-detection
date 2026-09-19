@@ -8,3 +8,5 @@ __pycache__/
 .DS_Store
 
 models/
+.env
+terraform.exe

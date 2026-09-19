@@ -12,3 +12,8 @@ output "ecs_cluster_name" {
   description = "The name of the ECS Cluster"
   value       = aws_ecs_cluster.main_cluster.name
 }
+
+output "api_public_url" {
+  description = "The LIVE public URL of your FraudGuard API!"
+  value       = "http://${aws_lb.api_alb.dns_name}/docs"
+}

@@ -1,0 +1,22 @@
+# Ignore massive raw datasets
+data/
+
+# Ignore virtual environments
+.venv/
+env/
+venv/
+
+# Ignore model training artifacts & cache
+mlruns/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.pytest_cache/
+
+# Ignore git history
+.git/
+.gitignore
+
+# Ignore any intermediate notebooks that aren't needed for inference
+notebooks/
+.env
