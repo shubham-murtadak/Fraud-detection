@@ -19,6 +19,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src/ /app/src/
 COPY models/ /app/models/
 
+# Add src to PYTHONPATH so joblib can find the 'fraudguard' custom classes during unpickling!
+ENV PYTHONPATH="/app/src:${PYTHONPATH}"
+
 # 7. Expose the port that FastAPI runs on
 EXPOSE 8000
 
